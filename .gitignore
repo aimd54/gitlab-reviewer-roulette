@@ -1,0 +1,42 @@
+# Build artifacts
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+__debug_bin*
+
+# Test coverage
+coverage.txt
+coverage.html
+
+# Linter reports
+.cache/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+config.yaml
+config.local.yaml
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.*.tmp

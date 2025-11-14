@@ -1,0 +1,185 @@
+version: "2"
+run:
+  go: "1.25"
+  modules-download-mode: readonly
+  tests: true
+linters:
+  enable:
+    - bodyclose
+    - gocritic
+    - gocyclo
+    - godot
+    - gosec
+    - misspell
+    - noctx
+    - prealloc
+    - revive
+    - unconvert
+    - unparam
+    - whitespace
+  disable:
+    - dupl
+    - exhaustive
+    - goconst
+    - nlreturn
+  settings:
+    dupl:
+      threshold: 100
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+        - (*database/sql.Rows).Close
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      disabled-checks:
+        - whyNoLint
+        - hugeParam
+        - exitAfterDefer
+        - rangeValCopy
+        - unnamedResult
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+        - experimental
+    gocyclo:
+      min-complexity: 15
+    godot:
+      scope: declarations
+      capital: false
+    gosec:
+      excludes:
+        - G104
+      severity: medium
+      confidence: medium
+      config:
+        G301: "0750"
+        G302: "0640"
+    govet:
+      disable:
+        - shadow
+      enable-all: true
+    misspell:
+      locale: US
+      ignore-rules:
+        - gitlab
+        - kubernetes
+        - roulette
+    revive:
+      confidence: 0.8
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: indent-error-flow
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: unused-parameter
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - dupl
+          - goconst
+          - gocyclo
+          - godot
+          - gosec
+          - revive
+          - unparam
+        path: _test\.go
+      - linters:
+          - errcheck
+          - godot
+          - revive
+          - unparam
+        path: test/mocks/
+      - linters:
+          - errcheck
+          - gocritic
+          - gocyclo
+          - godot
+          - revive
+          - unparam
+        path: cmd/
+      - linters:
+          - godot
+          - revive
+        path: internal/api/health/
+      - linters:
+          - godot
+        path: internal/api/webhook/
+      - linters:
+          - godot
+          - revive
+        path: pkg/
+      - linters:
+          - gosec
+        path: internal/service/roulette/
+        text: G404
+      - linters:
+          - gosec
+        path: pkg/logger/
+        text: G304
+      - linters:
+          - gocyclo
+        path: internal/service/aggregator/
+      - linters:
+          - misspell
+        text: noteable
+      - linters:
+          - govet
+        text: fieldalignment
+      - linters:
+          - staticcheck
+        text: 'SA1019:'
+      - linters:
+          - lll
+        path: .*\.pb\.go$
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  fix: false
+severity:
+  default: error
+  rules:
+    - linters:
+        - godot
+        - misspell
+        - whitespace
+      severity: warning
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+    goimports:
+      local-prefixes:
+        - github.com/aimd54/gitlab-reviewer-roulette
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
