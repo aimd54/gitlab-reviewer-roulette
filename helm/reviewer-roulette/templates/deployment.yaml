@@ -1,0 +1,186 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "reviewer-roulette.fullname" . }}
+  labels:
+    {{- include "reviewer-roulette.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "reviewer-roulette.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "reviewer-roulette.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "reviewer-roulette.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      # Init container for database migrations
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/app/migrate"]
+          args: ["up"]
+          env:
+            {{- include "reviewer-roulette.env" . | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.initResources | nindent 12 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.config.server.port }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.metrics.prometheus.port }}
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+
+          env:
+            {{- include "reviewer-roulette.env" . | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "reviewer-roulette.fullname" . }}-config
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- define "reviewer-roulette.env" -}}
+# Environment variables from Secret
+- name: GITLAB_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: GITLAB_TOKEN
+- name: GITLAB_WEBHOOK_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: GITLAB_WEBHOOK_SECRET
+- name: POSTGRES_HOST
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_HOST
+- name: POSTGRES_PORT
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_PORT
+- name: POSTGRES_DB
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_DB
+- name: POSTGRES_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_USER
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_PASSWORD
+- name: POSTGRES_SSL_MODE
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: POSTGRES_SSL_MODE
+- name: REDIS_HOST
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: REDIS_HOST
+- name: REDIS_PORT
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: REDIS_PORT
+- name: REDIS_DB
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: REDIS_DB
+{{- if .Values.config.redis.password }}
+- name: REDIS_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: REDIS_PASSWORD
+{{- end }}
+{{- if .Values.config.mattermost.webhookURL }}
+- name: MATTERMOST_WEBHOOK_URL
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "reviewer-roulette.fullname" . }}-secret
+      key: MATTERMOST_WEBHOOK_URL
+{{- end }}
+{{- end -}}

@@ -1,0 +1,86 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║         GitLab Reviewer Roulette Bot - Successfully Installed!       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+🎉 Your intelligent code review assignment system is ready!
+
+📋 Release Information:
+   Name:      {{ .Release.Name }}
+   Namespace: {{ .Release.Namespace }}
+   Version:   {{ .Chart.AppVersion }}
+
+🔧 Next Steps:
+
+1. Check the deployment status:
+   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "reviewer-roulette.name" . }}
+
+2. View application logs:
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "reviewer-roulette.name" . }} -f
+
+3. Access the application:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+   - http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+   Run this command to port-forward:
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "reviewer-roulette.fullname" . }} 8080:8080
+
+   Then access:
+   - Application: http://localhost:8080
+   - Health:      http://localhost:8080/health
+   - Metrics:     http://localhost:9090/metrics
+{{- end }}
+
+4. Initialize users from GitLab:
+   kubectl exec -n {{ .Release.Namespace }} -it deployment/{{ include "reviewer-roulette.fullname" . }} -- /app/init --config /app/config/config.yaml
+
+5. Configure GitLab Webhook:
+   URL:    {{ if .Values.ingress.enabled }}http{{ if .Values.ingress.tls }}s{{ end }}://{{ (index .Values.ingress.hosts 0).host }}/webhook/gitlab{{ else }}http://YOUR_DOMAIN/webhook/gitlab{{ end }}
+   Secret: {{ .Values.config.gitlab.webhookSecret }}
+   Trigger: Merge Request Events, Note Events
+
+📊 Dashboard API Endpoints:
+{{- if .Values.ingress.enabled }}
+{{- $host := (index .Values.ingress.hosts 0).host }}
+   - Leaderboard: http{{ if .Values.ingress.tls }}s{{ end }}://{{ $host }}/api/v1/leaderboard
+   - Badges:      http{{ if .Values.ingress.tls }}s{{ end }}://{{ $host }}/api/v1/badges
+{{- else }}
+   - Leaderboard: http://localhost:8080/api/v1/leaderboard
+   - Badges:      http://localhost:8080/api/v1/badges
+{{- end }}
+
+📈 Monitoring:
+{{- if .Values.metrics.serviceMonitor.enabled }}
+   - Prometheus ServiceMonitor created
+   - Metrics available at: /metrics (port 9090)
+{{- else }}
+   - Configure Prometheus to scrape: {{ include "reviewer-roulette.fullname" . }}-metrics:9090/metrics
+{{- end }}
+
+📚 Documentation:
+   - Full docs: https://github.com/aimd54/gitlab-reviewer-roulette
+   - API docs:  https://github.com/aimd54/gitlab-reviewer-roulette/blob/main/GAMIFICATION.md
+
+⚙️  Configuration:
+   - Config stored in ConfigMap: {{ include "reviewer-roulette.fullname" . }}-config
+   - Secrets stored in Secret: {{ include "reviewer-roulette.fullname" . }}-secret
+
+🎮 To test the /roulette command:
+   Create a merge request in GitLab and add a comment: /roulette
+
+{{- if .Values.scheduler.enabled }}
+✅ Scheduler enabled - Daily notifications and badge evaluation active
+{{- else }}
+⚠️  Scheduler disabled - Enable in values.yaml for automated features
+{{- end }}
+
+{{- if not .Values.ingress.enabled }}
+
+⚠️  IMPORTANT: Ingress is disabled. To expose the application externally:
+   1. Enable ingress in values.yaml, or
+   2. Create a LoadBalancer service, or
+   3. Use port-forwarding for testing
+{{- end }}
+
+Happy reviewing! 🚀

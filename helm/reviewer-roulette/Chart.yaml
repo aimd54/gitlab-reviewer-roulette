@@ -1,0 +1,32 @@
+apiVersion: v2
+name: reviewer-roulette
+description: Intelligent code review assignment system for GitLab with gamification
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: 1.0.0
+
+# This is the version number of the application being deployed.
+appVersion: "1.5.0"
+
+keywords:
+  - gitlab
+  - code-review
+  - reviewer-assignment
+  - gamification
+  - metrics
+
+home: https://github.com/aimd54/gitlab-reviewer-roulette
+sources:
+  - https://github.com/aimd54/gitlab-reviewer-roulette
+
+maintainers:
+  - name: aimd54
+    email: 1679489+aimd54@users.noreply.github.com
+
+# Dependencies
+dependencies: []
+
+# Minimum Kubernetes version
+kubeVersion: ">=1.23.0-0"

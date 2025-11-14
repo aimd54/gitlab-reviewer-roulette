@@ -1,0 +1,164 @@
+server:
+  port: 8080
+  environment: development # development or production
+  language: en # Bot response language: en (English), fr (French)
+
+gitlab:
+  url: https://gitlab.example.com
+  token: ${GITLAB_BOT_TOKEN}
+  bot_username: reviewer-roulette-bot
+  webhook_secret: ${GITLAB_WEBHOOK_SECRET}
+
+mattermost:
+  webhook_url: ${MATTERMOST_WEBHOOK_URL}
+  channel: "#reviews"
+  enabled: true
+
+database:
+  postgres:
+    host: localhost  # or use ${POSTGRES_HOST} if environment variable is set
+    port: 5432       # must be an integer, not ${POSTGRES_PORT:5432}
+    database: reviewer_roulette
+    user: postgres
+    password: postgres
+    ssl_mode: disable
+    max_open_conns: 25
+    max_idle_conns: 5
+    conn_max_lifetime: 300 # seconds
+  redis:
+    host: localhost  # or use ${REDIS_HOST} if environment variable is set
+    port: 6379       # must be an integer, not ${REDIS_PORT:6379}
+    password: ""     # or use ${REDIS_PASSWORD} if environment variable is set
+    db: 0
+    pool_size: 10
+
+teams:
+  - name: team-frontend
+    members:
+      - username: alice
+        role: dev
+      - username: bob
+        role: dev
+      - username: charlie
+        role: dev
+  - name: team-backend
+    members:
+      - username: david
+        role: dev
+      - username: eve
+        role: ops
+      - username: frank
+        role: dev
+  - name: team-platform
+    members:
+      - username: grace
+        role: ops
+      - username: henry
+        role: ops
+  - name: team-mobile
+    members:
+      - username: isabel
+        role: dev
+      - username: jack
+        role: dev
+  - name: team-data
+    members:
+      - username: kate
+        role: dev
+      - username: leo
+        role: ops
+
+roulette:
+  weights:
+    current_load: 10          # penalty per active review
+    recent_review: 5          # penalty if reviewed in last 24h
+    expertise_bonus: 2        # bonus for file expertise match
+  expertise:
+    dev:
+      - "*.java"
+      - "*.js"
+      - "*.jsx"
+      - "*.ts"
+      - "*.tsx"
+      - "*.go"
+      - "*.py"
+      - "*.rb"
+      - "*.php"
+      - "*.cs"
+      - "*.cpp"
+      - "*.c"
+      - "*.h"
+    ops:
+      - "*.yml"
+      - "*.yaml"
+      - "*.pp"
+      - "Dockerfile"
+      - "*.tf"
+      - "*.sh"
+      - "*.bash"
+      - "docker-compose*.yml"
+      - "*.hcl"
+
+scheduler:
+  enabled: true
+  time: "09:00"                      # Format: HH:MM (daily notifications)
+  badge_evaluation_time: "0 2 * * *" # Cron format: badge evaluation at 2 AM daily
+  timezone: "Europe/Paris"
+  skip_weekends: true
+  skip_holidays: false
+
+metrics:
+  retention_days: 0            # 0 = forever
+  prometheus:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+logging:
+  level: info                  # debug, info, warn, error
+  format: json                 # json or console
+  output: stdout               # stdout or file path
+
+badges:
+  - name: "speed_demon"
+    description: "⚡ Reviews in less than 2 hours on average"
+    icon: "⚡"
+    criteria:
+      metric: avg_ttfr
+      operator: "<"
+      value: 120              # minutes
+  - name: "thorough_reviewer"
+    description: "🔍 Averages 5+ comments per review"
+    icon: "🔍"
+    criteria:
+      metric: avg_comment_count
+      operator: ">="
+      value: 5
+  - name: "team_player"
+    description: "🤝 Most reviews completed this month"
+    icon: "🤝"
+    criteria:
+      metric: completed_reviews
+      operator: "top"
+      value: 1
+      period: "month"
+  - name: "mentor"
+    description: "🌟 Most external (cross-team) reviews"
+    icon: "🌟"
+    criteria:
+      metric: external_reviews
+      operator: "top"
+      value: 1
+      period: "month"
+
+availability:
+  cache_ttl: 300              # seconds (5 minutes)
+  ooo_keywords:               # Keywords in GitLab status that indicate OOO
+    - "vacation"
+    - "vacances"
+    - "ooo"
+    - "out of office"
+    - "pto"
+    - "holiday"
+    - "congé"
+    - "absent"

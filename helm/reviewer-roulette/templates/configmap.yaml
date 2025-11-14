@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "reviewer-roulette.fullname" . }}-config
+  labels:
+    {{- include "reviewer-roulette.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    server:
+      port: {{ .Values.config.server.port }}
+      environment: {{ .Values.config.server.environment }}
+      language: {{ .Values.config.server.language }}
+
+    gitlab:
+      url: {{ .Values.config.gitlab.url }}
+      bot_username: {{ .Values.config.gitlab.botUsername }}
+      {{- if .Values.config.gitlab.timeout }}
+      timeout: {{ .Values.config.gitlab.timeout }}
+      {{- end }}
+
+    logging:
+      level: {{ .Values.config.logging.level }}
+      format: {{ .Values.config.logging.format }}
+      output: {{ .Values.config.logging.output }}
+
+    mattermost:
+      enabled: {{ .Values.config.mattermost.enabled }}
+      {{- if .Values.config.mattermost.channel }}
+      channel: {{ .Values.config.mattermost.channel }}
+      {{- end }}
+
+    metrics:
+      retention_days: {{ .Values.config.metrics.retentionDays }}
+      prometheus:
+        enabled: {{ .Values.metrics.prometheus.enabled }}
+        port: {{ .Values.metrics.prometheus.port }}
+        path: {{ .Values.metrics.prometheus.path }}
+
+    scheduler:
+      enabled: {{ .Values.scheduler.enabled }}
+      {{- if .Values.scheduler.dailyNotificationTime }}
+      daily_notification_time: {{ .Values.scheduler.dailyNotificationTime | quote }}
+      {{- end }}
+      {{- if .Values.scheduler.timezone }}
+      timezone: {{ .Values.scheduler.timezone | quote }}
+      {{- end }}
+
+    roulette:
+      cache_ttl: {{ .Values.config.roulette.cacheTTL }}
+      max_recent_reviews: {{ .Values.config.roulette.maxRecentReviews }}
+      expertise:
+        dev:
+          {{- range .Values.config.roulette.expertise.dev }}
+          - {{ . | quote }}
+          {{- end }}
+        ops:
+          {{- range .Values.config.roulette.expertise.ops }}
+          - {{ . | quote }}
+          {{- end }}
+
+    teams:
+      {{- range .Values.config.teams }}
+      - name: {{ .name }}
+        members:
+          {{- range .members }}
+          - username: {{ .username }}
+            role: {{ .role }}
+          {{- end }}
+      {{- end }}
+
+    {{- if .Values.config.badges }}
+    badges:
+      {{- range .Values.config.badges }}
+      - name: {{ .name | quote }}
+        display_name: {{ .displayName | quote }}
+        description: {{ .description | quote }}
+        icon: {{ .icon | quote }}
+        tier: {{ .tier | quote }}
+        criteria:
+          metric: {{ .criteria.metric }}
+          operator: {{ .criteria.operator | quote }}
+          value: {{ .criteria.value }}
+          period: {{ .criteria.period }}
+      {{- end }}
+    {{- end }}

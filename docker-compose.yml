@@ -1,0 +1,209 @@
+# Unified Docker Compose configuration with profiles
+# Profiles allow selective service startup:
+#   --profile local         : Start app + postgres + redis (for development)
+#   --profile gitlab        : Start GitLab service (for testing)
+#   --profile observability : Start Prometheus + Grafana (for metrics)
+#
+# Examples:
+#   docker compose up -d                                    # Only postgres + redis
+#   docker compose --profile local up -d                    # App + postgres + redis
+#   docker compose --profile gitlab up -d                   # GitLab only
+#   docker compose --profile local --profile gitlab up -d   # Everything for local testing
+#   docker compose --profile observability up -d            # Metrics stack
+
+services:
+  # ============================================================================
+  # Core Services (always available, no profile needed)
+  # ============================================================================
+
+  postgres:
+    image: postgres:18-alpine3.22
+    container_name: reviewer-roulette-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: reviewer_roulette
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reviewer-roulette
+
+  redis:
+    image: redis:8.2.3-alpine
+    container_name: reviewer-roulette-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reviewer-roulette
+
+  # ============================================================================
+  # Application Service (profile: local)
+  # ============================================================================
+
+  app:
+    profiles: ["local"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reviewer-roulette-app
+    environment:
+      # Server configuration
+      SERVER_PORT: 8080
+      SERVER_ENVIRONMENT: development
+      SERVER_LANGUAGE: en
+
+      # GitLab configuration
+      GITLAB_URL: http://gitlab
+      GITLAB_TOKEN: ${GITLAB_BOT_TOKEN:-}
+      GITLAB_BOT_USERNAME: reviewer-roulette-bot
+      GITLAB_WEBHOOK_SECRET: ${GITLAB_WEBHOOK_SECRET:-}
+
+      # Mattermost configuration
+      MATTERMOST_WEBHOOK_URL: ${MATTERMOST_WEBHOOK_URL:-}
+      MATTERMOST_CHANNEL: "#reviews"
+      MATTERMOST_ENABLED: "false"
+
+      # PostgreSQL configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: reviewer_roulette
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_SSL_MODE: disable
+      POSTGRES_MAX_OPEN_CONNS: 25
+      POSTGRES_MAX_IDLE_CONNS: 5
+      POSTGRES_CONN_MAX_LIFETIME: 300
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_DB: 0
+      REDIS_POOL_SIZE: 10
+
+      # Logging configuration
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      LOG_OUTPUT: stdout
+
+      # Scheduler configuration
+      SCHEDULER_ENABLED: "true"
+      SCHEDULER_TIME: "09:00"
+      SCHEDULER_TIMEZONE: "Europe/Paris"
+      SCHEDULER_SKIP_WEEKENDS: "true"
+      SCHEDULER_SKIP_HOLIDAYS: "false"
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - reviewer-roulette
+    restart: unless-stopped
+
+  # ============================================================================
+  # GitLab Service (profile: gitlab)
+  # ============================================================================
+
+  gitlab:
+    profiles: ["gitlab"]
+    image: gitlab/gitlab-ee:18.3.5-ee.0
+    container_name: gitlab
+    restart: always
+    ports:
+      - "8000:80" # HTTP
+      - "8443:443" # HTTPS
+      - "822:22" # SSH
+    volumes:
+      - "gitlab-config:/etc/gitlab"
+      - "gitlab-logs:/var/log/gitlab"
+      - "gitlab-data:/var/opt/gitlab"
+    shm_size: "256m"
+    networks:
+      - reviewer-roulette
+
+  # ============================================================================
+  # Observability Stack (profile: observability)
+  # ============================================================================
+
+  prometheus:
+    profiles: ["observability"]
+    image: prom/prometheus:v3.7.3
+    container_name: reviewer-roulette-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--storage.tsdb.retention.time=90d"
+      - "--web.enable-lifecycle"
+    networks:
+      - reviewer-roulette
+    restart: unless-stopped
+
+  grafana:
+    profiles: ["observability"]
+    image: grafana/grafana:main
+    container_name: reviewer-roulette-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - reviewer-roulette
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+# ============================================================================
+# Volumes
+# ============================================================================
+
+volumes:
+  postgres-data:
+  redis-data:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+  prometheus-data:
+  grafana-data:
+
+# ============================================================================
+# Networks
+# ============================================================================
+
+networks:
+  reviewer-roulette:
+    driver: bridge

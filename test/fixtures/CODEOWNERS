@@ -1,0 +1,27 @@
+# Example CODEOWNERS file for testing
+
+# Default owner for everything
+* @alice
+
+# Frontend files
+*.js @bob @charlie
+*.jsx @bob
+*.css @alice @bob
+
+# Backend files
+*.go @david @eve
+*.py @frank
+
+# DevOps files
+*.yml @grace
+*.yaml @grace
+Dockerfile @henry
+*.tf @grace @henry
+
+# Docs
+/docs/ @alice
+*.md @bob
+
+# Specific paths
+/src/components/ @charlie
+/api/ @david @frank
