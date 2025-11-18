@@ -233,7 +233,7 @@ test-ci: ## Run tests in CI mode (no race detector if CGO unavailable)
 ##@ Quality
 
 .PHONY: check
-check: fmt vet lint lint-markdown test ## Run all quality checks
+check: fmt vet lint lint-markdown test security vuln-check ## Run all quality checks including security
 
 .PHONY: verify
 verify: ## Verify dependencies and code

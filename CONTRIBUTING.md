@@ -88,26 +88,32 @@ and instructions for contributing to this project.
 
 ### Before Committing
 
-Always run quality checks before committing:
+**During development** (every commit):
+- Pre-commit hooks run automatically (format, vet, lint, fast tests)
+
+**Before creating a PR**:
 
 ```bash
 make check
 ```
 
-This runs:
+This comprehensive check includes:
 
 - `make fmt` - Format code with gofmt
 - `make vet` - Run go vet
-- `make lint` - Run golangci-lint
-- `make test` - Run unit tests
+- `make lint` - Run golangci-lint with 25+ linters
+- `make lint-markdown` - Lint markdown documentation
+- `make test` - Run full unit test suite
+- `make security` - Security scan with gosec
+- `make vuln-check` - Check for dependency vulnerabilities (govulncheck)
 
 ### Additional Quality Checks
 
 ```bash
 make fmt-check        # Check formatting without modifying
-make security         # Run security scan with gosec
-make vuln-check       # Check for dependency vulnerabilities
 make test-coverage    # Generate HTML coverage report
+make test-short       # Run tests without race detector (faster)
+make test-integration # Run integration tests (requires Docker)
 ```
 
 ### Code Style Guidelines
