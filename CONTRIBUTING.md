@@ -242,15 +242,55 @@ git commit --no-verify
    git push origin feat/your-feature-name
    ```
 
-4. **Create a Merge Request** on GitLab with:
+4. **Create a Pull Request** on GitHub with:
    - Clear title following commit message conventions
    - Description explaining what and why
    - Reference to any related issues
    - Screenshots/examples if applicable
+   - Fill out the PR template checklist
 
-5. **Respond to feedback** promptly and professionally
+5. **Wait for CI checks** to pass:
+   - All GitHub Actions workflows must pass (quality, test, build, security)
+   - Check the "Actions" tab for detailed results
+   - Fix any failing checks before requesting review
 
-6. **Squash commits** if requested before merging
+6. **Respond to feedback** promptly and professionally
+
+7. **Squash commits** if requested before merging
+
+### CI/CD Pipeline
+
+All pull requests automatically run through GitHub Actions:
+
+**Quality Checks:**
+
+- Format check (`gofmt`)
+- Go vet analysis
+- golangci-lint (25+ linters)
+
+**Tests:**
+
+- Unit tests with coverage reporting
+- Coverage uploaded to Codecov
+
+**Build:**
+
+- Binary compilation verification for all targets
+
+**Security:**
+
+- gosec security scanner
+- govulncheck vulnerability scanner
+- Dependency verification
+- Secret scanning (TruffleHog)
+- Trivy vulnerability scan
+
+**Required for merge:**
+
+- All CI jobs must pass (except vulnerability warnings)
+- At least one approval from maintainer
+- All conversations resolved
+- Branch up to date with main
 
 ## Markdown Quality
 

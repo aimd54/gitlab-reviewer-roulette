@@ -19,8 +19,6 @@ We take the security of GitLab Reviewer Roulette seriously. If you have discover
 
 Instead, please use [GitHub's Security Advisories](https://github.com/aimd54/gitlab-reviewer-roulette/security/advisories/new) to privately report vulnerabilities.
 
-Alternatively, you can report via email to: **1679489+aimd54@users.noreply.github.com**
-
 Include the following information:
 
 - Type of vulnerability
@@ -136,7 +134,6 @@ Redis cache contains temporary availability data. While not highly sensitive, it
 
 For security concerns:
 
-- Use [GitHub Security Advisories](https://github.com/aimd54/gitlab-reviewer-roulette/security/advisories/new) (preferred)
-- Email: **1679489+aimd54@users.noreply.github.com**
+- Use [GitHub Security Advisories](https://github.com/aimd54/gitlab-reviewer-roulette/security/advisories/new)
 
 For general questions, use GitHub Issues or Discussions.

@@ -1,6 +1,9 @@
 # GitLab Reviewer Roulette Bot
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/aimd54/gitlab-reviewer-roulette/actions/workflows/ci.yml/badge.svg)](https://github.com/aimd54/gitlab-reviewer-roulette/actions/workflows/ci.yml)
+[![Security](https://github.com/aimd54/gitlab-reviewer-roulette/actions/workflows/security.yml/badge.svg)](https://github.com/aimd54/gitlab-reviewer-roulette/actions/workflows/security.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aimd54/gitlab-reviewer-roulette)](https://goreportcard.com/report/github.com/aimd54/gitlab-reviewer-roulette)
 
 An intelligent code review assignment system for GitLab that automatically
 selects reviewers based on availability, workload, expertise, and team
@@ -519,9 +522,15 @@ These endpoints provide public access to leaderboards, statistics, and badge inf
 
 ## Documentation
 
-- **README.md** (this file) - Project overview and quick start
-- **METRICS.md** - Metrics collection, Prometheus setup, and Grafana dashboards
-- **CONTRIBUTING.md** - Contributor guidelines and quality standards
+### Core Documentation
+
+- **[README.md](README.md)** (this file) - Project overview and quick start
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributor guidelines and quality standards
+- **[SECURITY.md](SECURITY.md)** - Security policy and vulnerability reporting
+
+### Features & Operations
+
+- **[METRICS.md](METRICS.md)** - Metrics collection, Prometheus setup, and Grafana dashboards
 
 ## Contributing
 
