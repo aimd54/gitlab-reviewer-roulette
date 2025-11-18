@@ -98,7 +98,7 @@ Examples:
   ./scripts/setup-gitlab.sh --minimal
 
   # Full realistic test environment
-  export GITLAB_ROOT_TOKEN="glpat-xxxxxxxxxxxxxxxxxxxx"
+  export GITLAB_ROOT_TOKEN="glpat-your-token-here"
   ./scripts/setup-gitlab.sh --realistic
 
   # Preview what would be created
