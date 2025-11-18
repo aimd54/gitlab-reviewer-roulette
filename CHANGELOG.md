@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2025-11-18
+
+### Added
+
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`)
+  - Format checking, go vet, golangci-lint
+  - Unit tests with coverage reporting (Codecov integration)
+  - Multi-platform binary builds
+  - Security scanning (gosec, govulncheck)
+- GitHub Actions release workflow (`.github/workflows/release.yml`)
+  - Multi-platform binaries (Linux/macOS/Windows, amd64/arm64)
+  - Docker images published to GitHub Container Registry (ghcr.io)
+  - Automated changelog extraction from CHANGELOG.md
+  - GitHub Release creation with binaries attached
+- GitHub Actions security workflow (`.github/workflows/security.yml`)
+  - Daily security scans (gosec, govulncheck, Trivy, TruffleHog)
+  - Dependency review on pull requests
+  - SARIF reports uploaded to GitHub Security tab
+  - Secret scanning with TruffleHog
+- Docker image: `ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0`
+  - Multi-architecture support (linux/amd64, linux/arm64)
+  - Semantic version tags (v1.8.0, 1.8, 1, latest)
+  - VERSION build arg embedded in binaries
+- CI status badges in README.md
+- `make check` now includes security and vulnerability checks
+- CONTRIBUTING.md documentation for workflow layers
+
+### Changed
+
+- Updated all documentation to reference GitHub Container Registry images
+- Helm chart: Updated repository to GHCR (Chart v1.1.0, App v1.8.0)
+- README.md: Added Docker image section with pull examples
+- Dockerfile: Added VERSION build arg for version embedding in binaries
+
+### Fixed
+
+- Security vulnerability: Updated quic-go from v0.54.0 to v0.56.0 (CVE fix)
+  - Resolves high-severity DoS vulnerability (Dependabot alert #1)
+  - Malicious server could crash client via premature HANDSHAKE_DONE frame
+- golangci-lint-action: Updated from v6 to v7 for compatibility with v2.6.1
+- gosec SARIF upload: Made continue-on-error to handle malformed SARIF gracefully
+- Trivy false positive: Obfuscated example token in setup script
+
+### Security
+
+- Fixed high-severity DoS vulnerability in quic-go dependency
+- Added 6 security scanning tools to CI/CD pipeline
+- Daily automated security scans via GitHub Actions
+- Dependency verification in all builds
+
+**Benefits**: Native GitHub integration, unlimited CI minutes for public repos, comprehensive security scanning, automated releases, free Docker image hosting.
+
+**Docker Image**: `ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0`
+
+---
+
 ## [1.7.0] - 2025-11-15
 
 ### Added
