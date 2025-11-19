@@ -87,10 +87,11 @@ jobs:
           fail-on-severity: moderate
           deny-licenses: GPL-2.0, GPL-3.0
 
-  # Check for exposed secrets
+  # Check for exposed secrets (only on PRs where we have a commit range)
   secret-scanning:
     name: Secret Scanning
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

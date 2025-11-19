@@ -261,7 +261,7 @@ The application is available as a pre-built multi-architecture Docker image on G
 docker pull ghcr.io/aimd54/gitlab-reviewer-roulette:latest
 
 # Pull a specific version
-docker pull ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0
+docker pull ghcr.io/aimd54/gitlab-reviewer-roulette:1.8.0
 
 # Quick start (requires config.yaml)
 docker run -d \
@@ -269,13 +269,13 @@ docker run -d \
   -p 8080:8080 \
   -p 9090:9090 \
   -v $(pwd)/config.yaml:/app/config.yaml \
-  ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0
+  ghcr.io/aimd54/gitlab-reviewer-roulette:1.8.0
 ```
 
 **Available tags:**
 
 - `latest` - Latest stable release
-- `v1.8.0`, `1.8`, `1` - Semantic version tags
+- `1.8.0`, `1.8`, `1` - Semantic version tags
 - **Multi-arch**: `linux/amd64`, `linux/arm64` (automatically detected)
 
 ### Docker (Building from Source)
@@ -284,18 +284,18 @@ For single-host deployments or custom builds:
 
 ```bash
 # Option 1: Pull pre-built image (recommended)
-docker pull ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0
+docker pull ghcr.io/aimd54/gitlab-reviewer-roulette:1.8.0
 
 # Option 2: Build from source
 git clone https://github.com/aimd54/gitlab-reviewer-roulette.git
 cd gitlab-reviewer-roulette
-docker build -t reviewer-roulette:v1.8.0 .
+docker build -t reviewer-roulette:1.8.0 .
 
 # Run migrations (using pre-built or custom image)
 docker run --rm \
   --network host \
   -v $(pwd)/config.yaml:/app/config.yaml \
-  ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0 \
+  ghcr.io/aimd54/gitlab-reviewer-roulette:1.8.0 \
   /app/migrate up
 
 # Run application
@@ -308,7 +308,7 @@ docker run -d \
   -e GITLAB_TOKEN=$GITLAB_TOKEN \
   -e GITLAB_WEBHOOK_SECRET=$WEBHOOK_SECRET \
   -e POSTGRES_PASSWORD=$DB_PASSWORD \
-  ghcr.io/aimd54/gitlab-reviewer-roulette:v1.8.0
+  ghcr.io/aimd54/gitlab-reviewer-roulette:1.8.0
 ```
 
 ### Docker Compose (Development/Small Deployments)
